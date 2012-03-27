@@ -93,6 +93,11 @@ errcode_t ext2fs_mmp_read(ext2_filsys fs, blk64_t mmp_blk, void *buf)
 	}
 
 	mmp_cmp = fs->mmp_cmp;
+
+	if (!(fs->flags & EXT2_FLAG_IGNORE_CSUM_ERRORS) &&
+	    !ext2fs_mmp_csum_verify(fs, mmp_cmp))
+		retval = EXT2_ET_MMP_CSUM_INVALID;
+
 #ifdef WORDS_BIGENDIAN
 	ext2fs_swap_mmp(mmp_cmp);
 #endif
@@ -126,6 +131,10 @@ errcode_t ext2fs_mmp_write(ext2_filsys fs, blk64_t mmp_blk, void *buf)
 #ifdef WORDS_BIGENDIAN
 	ext2fs_swap_mmp(mmp_s);
 #endif
+
+	retval = ext2fs_mmp_csum_set(fs, mmp_s);
+	if (retval)
+		return retval;
 
 	/* I was tempted to make this use O_DIRECT and the mmp_fd, but
 	 * this caused no end of grief, while leaving it as-is works. */
@@ -383,7 +392,7 @@ mmp_error:
 /*
  * Update the on-disk mmp buffer, after checking that it hasn't been changed.
  */
-errcode_t ext2fs_mmp_update(ext2_filsys fs)
+errcode_t ext2fs_mmp_update2(ext2_filsys fs, int immediately)
 {
 	struct mmp_struct *mmp, *mmp_cmp;
 	struct timeval tv;
@@ -394,7 +403,8 @@ errcode_t ext2fs_mmp_update(ext2_filsys fs)
 		return 0;
 
 	gettimeofday(&tv, 0);
-	if (tv.tv_sec - fs->mmp_last_written < EXT2_MIN_MMP_UPDATE_INTERVAL)
+	if (!immediately &&
+	    tv.tv_sec - fs->mmp_last_written < EXT2_MIN_MMP_UPDATE_INTERVAL)
 		return 0;
 
 	retval = ext2fs_mmp_read(fs, fs->super->s_mmp_block, NULL);
@@ -413,4 +423,9 @@ errcode_t ext2fs_mmp_update(ext2_filsys fs)
 
 mmp_error:
 	return retval;
+}
+
+errcode_t ext2fs_mmp_update(ext2_filsys fs)
+{
+	return ext2fs_mmp_update2(fs, 0);
 }
