@@ -249,6 +249,9 @@ struct problem_context {
 /* Checking group descriptor failed */
 #define PR_0_CHECK_DESC_FAILED			0x000045
 
+/* Superblock has invalid MMP checksum. */
+#define PR_0_MMP_CSUM_INVALID			0x000045
+
 /*
  * metadata_csum supersedes uninit_bg; both feature bits cannot be set
  * simultaneously.
