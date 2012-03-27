@@ -250,6 +250,12 @@ struct problem_context {
 #define PR_0_CHECK_DESC_FAILED			0x000045
 
 /*
+ * metadata_csum supersedes uninit_bg; both feature bits cannot be set
+ * simultaneously.
+ */
+#define PR_0_META_AND_GDT_CSUM_SET		0x000046
+
+/*
  * Pass 1 errors
  */
 
@@ -603,7 +609,6 @@ struct problem_context {
 
 /* Error adjusting EA refcount */
 #define PR_1B_ADJ_EA_REFCOUNT	0x011007
-
 
 /* Pass 1C: Scan directories for inodes with dup blocks. */
 #define PR_1C_PASS_HEADER	0x012000

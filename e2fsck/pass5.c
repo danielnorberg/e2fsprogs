@@ -88,7 +88,7 @@ static void check_inode_bitmap_checksum(e2fsck_t ctx)
 	int		nbytes;
 	ext2_ino_t	ino_itr;
 	errcode_t	retval;
-	int		csum_flag = 0;
+	int		csum_flag;
 
 	/* If bitmap is dirty from being fixed, checksum will be corrected */
 	if (ext2fs_test_ib_dirty(ctx->fs))
@@ -103,9 +103,7 @@ static void check_inode_bitmap_checksum(e2fsck_t ctx)
 		fatal_error(ctx, 0);
 	}
 
-	if (EXT2_HAS_RO_COMPAT_FEATURE(ctx->fs->super,
-				       EXT4_FEATURE_RO_COMPAT_GDT_CSUM))
-		csum_flag = 1;
+	csum_flag = ext2fs_has_group_desc_csum(ctx->fs);
 
 	clear_problem_context(&pctx);
 	for (i = 0; i < ctx->fs->group_desc_count; i++) {
@@ -149,7 +147,7 @@ static void check_block_bitmap_checksum(e2fsck_t ctx)
 	int		nbytes;
 	blk64_t		blk_itr;
 	errcode_t	retval;
-	int		csum_flag = 0;
+	int		csum_flag;
 
 	/* If bitmap is dirty from being fixed, checksum will be corrected */
 	if (ext2fs_test_bb_dirty(ctx->fs))
@@ -164,9 +162,7 @@ static void check_block_bitmap_checksum(e2fsck_t ctx)
 		fatal_error(ctx, 0);
 	}
 
-	if (EXT2_HAS_RO_COMPAT_FEATURE(ctx->fs->super,
-				       EXT4_FEATURE_RO_COMPAT_GDT_CSUM))
-		csum_flag = 1;
+	csum_flag = ext2fs_has_group_desc_csum(ctx->fs);
 
 	clear_problem_context(&pctx);
 	for (i = 0; i < ctx->fs->group_desc_count; i++) {
@@ -378,8 +374,7 @@ static void check_block_bitmaps(e2fsck_t ctx)
 		goto errout;
 	}
 
-	csum_flag = EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-					       EXT4_FEATURE_RO_COMPAT_GDT_CSUM);
+	csum_flag = ext2fs_has_group_desc_csum(fs);
 redo_counts:
 	had_problem = 0;
 	save_problem = 0;
@@ -664,8 +659,7 @@ static void check_inode_bitmaps(e2fsck_t ctx)
 		goto errout;
 	}
 
-	csum_flag = EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-					       EXT4_FEATURE_RO_COMPAT_GDT_CSUM);
+	csum_flag = ext2fs_has_group_desc_csum(fs);
 redo_counts:
 	had_problem = 0;
 	save_problem = 0;
